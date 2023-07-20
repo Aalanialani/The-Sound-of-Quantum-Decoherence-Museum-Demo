@@ -4,7 +4,7 @@
 
 This project aims to explore an innovative approach to understanding quantum decoherence through sonification. The focus is on audibly representing quantum decoherence by converting the median T1 and T2 values of an IBM Quantum device directly from microseconds to hertz. T1 values are indicative of the relaxation time that a qubit decoheres from state |1> to state |0>, which reflects quantum decoherence. T2 values are indictative of the dephasing time that a qubit takes to decohere from state |1> to state |0>. I specifically focus on sonifying older generations of IBM Quantum devices (once historical date for T1 and T2 values are acquired) by taking these median T1 values for the system and mapping them directly to hertz. This project not only facilitates an innovative way to physically listen to the phenomena of quantum decoherence, but provides an opportunity to hear the progression of pioneering quantum technology over time.
 
-![Project Screenshot](./Screenshot (693).png "main menu of web app")
+![Project Screenshot](./Screenshot%20(693).png "Screenshot of my project")
 
 ## Museum Exhibit
 
