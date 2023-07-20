@@ -10,4 +10,4 @@ The project will form part of a museum exhibit at the Museum of Science and Indu
 
 ## Application Code
 
-The application code is written in React and uses the chroma-js library for color manipulation. It provides a visual representation of each IBM Quantum device's T1 values, which are mapped to a specific color and tone. The tones are generated when the user interacts with the interface. The code for the application is available in the `App.js` and 'App.css' file.
+The application code is written in React and uses the chroma-js library for color manipulation. It provides a visual representation of each IBM Quantum device's T1 values, which are mapped to a specific color and tone. The tones are generated when the user interacts with the interface. The code for the application is available in the 'App.js' and 'App.css' file.
