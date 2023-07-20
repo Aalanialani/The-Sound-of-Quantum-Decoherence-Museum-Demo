@@ -1,0 +1,336 @@
+import React, { useState } from 'react';
+import chroma from 'chroma-js';
+import './App.css';
+
+// Function to lighten color
+function lightenColor(color, percent) {
+    var num = parseInt(color.replace("#",""), 16),
+        amt = Math.round(2.55 * percent),
+        R = (num >> 16) + amt,
+        G = (num >> 8 & 0x00FF) + amt,
+        B = (num & 0x0000FF) + amt;
+    return "#" + (0x1000000 + (R<255?R<1?0:R:255)*0x10000 + (G<255?G<1?0:G:255)*0x100 + (B<255?B<1?0:B:255)).toString(16).slice(1);
+}
+
+// Circle Component
+function Circle({ color, lighterColor, onMouseEnter, onMouseLeave, onClick, frequency, size, fontSize, text }) {
+  return (
+    <button 
+      className={`circle-button ${size}`}
+      style={{ background: `linear-gradient(to bottom right, ${color}, ${lighterColor})` }}
+      onMouseEnter={onMouseEnter} 
+      onMouseLeave={onMouseLeave} 
+      onClick={() => onClick(frequency)}
+    >
+      <div className="circle-text" style={{fontSize: fontSize}}>{text}</div>
+    </button>
+  );
+}
+
+function App() {
+  const [showTooltip, setShowTooltip] = useState(false);
+  const [currentDevice, setCurrentDevice] = useState("ibmq_lima");
+  const [currentType, setCurrentType] = useState("T1");
+  const [processor, setProcessor] = useState("Falcon r4T");
+  const [aboutInfo, setAboutInfo] = useState("");
+
+  const deviceValues = {
+    "T1": {
+      "ibmq_lima": [97.88, 142.57, 65.7, 111.13, 26.19],
+      "ibmq_belem": [57.21, 24.54, 95.05, 105.13, 105.29],
+      "ibmq_quito": [94.38, 105.98, 93.44, 149.86, 99.12],
+      "ibmq_manila": [113.81, 176.05, 164.81, 64.39, 119.31],
+      "ibmq_jakarta": [192.4, 104.88, 173.21, 148.86, 100.97, 75.32, 102.57],
+      "ibmq_nairobi": [136.78, 156.1, 102.43, 105.21, 86.2, 145.38, 119.18],
+      "ibmq_lagos": [114.28, 101.8, 138.24, 197.6, 111.41, 101.09, 142.52],
+      "ibmq_perth": [226.64, 94.78, 161.59, 157.14, 177.84, 280.21, 254.49],
+      "ibmq_guadalupe": [37.47, 163.34, 82.5, 90.1, 116.5, 135.61, 129.18, 108.87, 103.89, 74.79, 69.25, 53.74, 88.3, 108.18, 95.18, 83.68],
+      "ibmq_peekskill": [438.4, 296.04, 574.66, 452.22, 571.92, 279.08, 373.01, 339.96, 274.37, 283.1, 269.68, 196.89, 421.57, 363.67, 523.03, 406.96, 264.93, 390.72, 338.22, 528.48, 196.45, 273.99, 377.36, 462.43, 246.75, 557.26, 299.59],
+      "ibmq_hanoi": [184.33, 146.04, 208.71, 199.40, 156.23, 198.95, 190.03, 210.21, 169.34, 153.89, 146.64, 218.19, 220.83, 290.45, 140.83, 52.149, 159.05, 121.22, 137.21, 129.64, 161.53, 169.61, 160.63, 160.52, 194.98, 198.06, 106.97],
+      "ibmq_auckland": [157.24, 152.61, 108.71, 217.97, 217.63, 185.04, 171.7, 152.91, 83.56, 115.35, 117.27, 156.33,57.03, 157.17, 133.10, 89.71, 117.55, 204.47, 170.98, 159.68, 170.51, 220.59, 172.17, 241.64, 189.42, 186.64,161.19],
+      "ibmq_cairo": [74.54585699, 74.5059831, 87.89290828, 146.7058089, 56.61858828, 48.32336137, 120.9188027, 156.1651928, 100.0063292, 125.5394241, 75.17551489, 82.14094038, 88.25726463, 145.0049849, 174.416053, 146.9543295, 57.04719031, 126.5520296, 132.8693196, 166.8612424, 105.3770647, 61.39244182, 130.1713226, 141.5416931, 131.3560914, 150.1759754, 175.2548826],
+      "ibmq_mumbai": [160.6684058, 102.9167206, 92.62200573, 99.82525975, 61.94606286, 133.634693, 119.9974267, 37.24663031, 120.003765, 112.4561584, 126.6008965, 255.9758318, 148.5236774, 158.8291696, 188.2820355, 106.9589274, 118.8271123, 90.40019428, 103.9801027, 116.2520551, 97.30331148, 151.8484502, 101.9962351, 164.604445, 125.5504327, 191.1468192, 109.2674938],
+      "ibmq_kolkata": [101.9321167, 187.5978629, 112.5182151, 145.1705335, 112.7156834, 130.5015995, 103.8011215, 213.6497819, 136.1070577, 99.53434484, 135.464683, 164.3389666, 133.953031, 65.25098654, 140.6776222, 123.5853867, 100.6687502, 90.87500148, 135.2166261, 65.26342222, 147.8679117, 131.8630692, 144.0960496, 84.19347882, 168.7736158, 211.465743, 130.4004151],
+      "ibmq_algiers": [96.30425241, 183.5977215, 153.6028957, 166.2386499, 154.5032587, 175.7850363, 116.7438293, 114.7594274, 153.7993049, 45.25939347, 100.3021807, 198.7290412, 98.55510967, 152.9022933, 139.0763887, 163.8427488, 134.5004847, 140.2324785, 220.8042533, 133.2942915, 106.6112632, 134.5610384, 208.697737, 146.0374399, 171.6403811, 173.6794865, 146.5602651],
+    },
+    "T2": {
+      "ibmq_lima": [129.67, 116.34, 70.82, 85.14, 23.62],
+      "ibmq_belem": [105.01, 43.74, 69.84, 189.78, 180.35],
+      "ibmq_quito": [97.14, 54.25, 109.93, 17.74, 121.56],
+      "ibmq_manila": [42, 80.27, 21.13, 48.62, 35.43],
+      "ibmq_jakarta": [48.4, 28.84, 23.54, 34.08, 40.84, 63.76, 17.82],
+      "ibmq_nairobi": [31.04, 83.41, 105.82, 48.87, 54.04, 19.4, 141.23],
+      "ibmq_lagos": [42.81, 89.91, 118.02, 90.63, 27.57, 66.02, 98.41],
+      "ibmq_perth": [83.12, 52.6, 89.38, 212.71, 58.72, 126.91, 313.82],
+      "ibmq_guadalupe": [50.01, 104.31, 88.72, 117.88, 89.76, 92.64, 15.45, 143.1, 107.47, 65.88, 105.44, 77.08, 163.9, 117.55, 159.78, 123.42],
+      "ibmq_peekskill": [431.55, 373.87, 307.39, 310.66, 395.18, 432.67, 218.61, 289.22, 294.06, 532.99, 263.04, 375.84, 449.86, 326.36, 214.73, 362.83, 195.97, 564.66, 356.1, 161.16, 65.36, 31.9, 488.53, 447.61, 392.21, 327.54, 462.41],
+      "ibmq_hanoi": [306.88, 91.53, 362.09, 30.631, 16.654, 283.81, 287.39, 251.93, 245.86, 257.37, 137.66, 219.17, 164.74, 223.49, 24.06, 30.55, 348.41, 59.99, 176.40, 161.18, 84.57, 35.20, 124.59, 169.01, 31.52, 101.03, 30.67],
+      "ibmq_auckland": [299.647958, 314.2790481, 163.1202175, 222.3348024, 277.8475058, 84.96174254, 181.3832691, 154.8033778, 87.73320986, 226.7292349, 45.05896486, 114.0048221, 90.72645779, 27.23650412, 83.23933188, 69, 140.0501268, 188.2387267, 255.1219378, 21.76809867, 199.9443688, 118.5002114, 62.57941316, 44.94994959, 34.92329031, 185.21, 37.42],
+      "ibmq_cairo": [151.0080087, 110.695753, 60.55896072, 153.9797666, 20.23689309, 34.52062785, 107.9498596, 156.2473221, 46.13047729, 30.71574237, 15.97601953, 132.1535591, 99.03902213, 211.2398858, 262.6568313, 123.4588578, 207.1012872, 107.2645045, 28.63305594, 163.6939512, 18.9694755, 108.0145488, 146.3058059, 168.7713195, 154.0692429, 114.4679166, 32.86346388],
+      "ibmq_mumbai": [252.4228225, 226.3147657, 166.0596239, 192.7232606, 59.39658296, 166.1606112, 82.67669397, 174.7172603, 210.295316, 121.780554, 155.6971796, 354.5880893, 251.2989891, 241.1299035, 162.651063, 35.81824667, 196.4139722, 84.96959818, 57.92219584, 198.6559928, 184.5717258, 209.7859315, 88.11500739, 211.2013267, 47.91380401, 214.9827067, 190.2075745],
+      "ibmq_kolkata": [79.72549143, 138.3091375, 106.6417786, 217.3666936, 157.6245955, 33.11851925, 126.7623788, 54.08564102, 49.54381635, 145.9588831, 48.45233237, 35.4298705, 86.91403181, 24.05591964, 182.188917, 199.9493427, 94.80075945, 45.39363062, 167.9566634, 28.25821653, 21.28296521, 22.53305697, 39.19686821, 61.19671166, 152.7032707, 150.6304563, 117.7863194],
+      "ibmq_algiers": [100.8999451, 189.2150097, 416.8157293, 55.63693957, 261.2041655, 119.2608531, 225.5750393, 250.5504269, 166.7548917, 177.1159879, 134.4020449, 29.57447416, 72.8959945, 199.2582125, 94.74287548, 207.7536781, 70.37070815, 53.73308649, 55.80436412, 37.66326181, 78.3325935, 123.2039157, 178.7168543, 54.31449559, 91.00548961, 69.22182954, 39.65713618],
+    },
+  };
+  
+  const values = deviceValues[currentType][currentDevice];
+
+  const minValue = Math.min(...values);
+  const maxValue = Math.max(...values);
+  const normalize = (value, min, max) => (value - min) / (max - min);
+
+  const colorScale = chroma.scale(['rgb(15, 98, 254)', 'rgb(85, 104, 255)', 'rgb(138, 108, 255)', 'rgb(216, 192, 255)', 'rgb(242, 239, 248)']).domain([0, 1]);
+
+  const colors = values.map(value => {
+    const normalizedValue = normalize(value, minValue, maxValue);
+    const color = colorScale(normalizedValue).css();
+    const lighterColor = lightenColor(color, 50);
+    return {color, lighterColor};
+  });
+
+  const handleClick = (frequency) => {
+    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    const oscillator = audioContext.createOscillator();
+    oscillator.frequency.value = Math.log2(frequency) * 20;
+    oscillator.connect(audioContext.destination);
+    oscillator.start();
+    setTimeout(() => { oscillator.stop(); }, 1000);
+  };
+
+  const handleMouseEnter = () => {
+    setShowTooltip(true);
+    setAboutInfo("T1 and T2 Values represent the relaxation time and the dephasing time of a quantum state of a qubit decohering in microseconds, which are being mapped directly to hertz to provide an auditory experience of quantum decoherence.");
+  };
+
+  const handleMouseLeave = () => {
+    setShowTooltip(false);
+    setAboutInfo("");
+  };
+
+  return (
+    <div className="App">
+      <div className="dropdowns-container">
+        <div className="dropdown">
+          <button className="dropbtn">Device</button>
+          <div className="dropdown-content">
+            <a href="#" onMouseEnter={() => {setCurrentDevice("ibmq_lima"); setProcessor("Falcon r4T");}}>ibmq_lima</a>
+            <a href="#" onMouseEnter={() => {setCurrentDevice("ibmq_belem"); setProcessor("Falcon r4T");}}>ibmq_belem</a>
+            <a href="#" onMouseEnter={() => {setCurrentDevice("ibmq_quito"); setProcessor("Falcon r4T");}}>ibmq_quito</a>
+            <a href="#" onMouseEnter={() => {setCurrentDevice("ibmq_manila"); setProcessor("Falcon r5.11L");}}>ibmq_manila</a>
+            <a href="#" onMouseEnter={() => {setCurrentDevice("ibmq_jakarta"); setProcessor("Falcon r5.11H");}}>ibmq_jakarta</a>
+            <a href="#" onMouseEnter={() => {setCurrentDevice("ibmq_nairobi"); setProcessor("Falcon r5.11H");}}>ibmq_nairobi</a>
+            <a href="#" onMouseEnter={() => {setCurrentDevice("ibmq_lagos"); setProcessor("Falcon r5.11H");}}>ibmq_lagos</a>
+            <a href="#" onMouseEnter={() => {setCurrentDevice("ibmq_perth"); setProcessor("Falcon r5.11H");}}>ibmq_perth</a>
+            <a href="#" onMouseEnter={() => {setCurrentDevice("ibmq_guadalupe"); setProcessor("Falcon r4P");}}>ibmq_guadalupe</a>
+            <a href="#" onMouseEnter={() => {setCurrentDevice("ibmq_peekskill"); setProcessor("Falcon r8");}}>ibmq_peekskill</a>
+            <a href="#" onMouseEnter={() => {setCurrentDevice("ibmq_hanoi"); setProcessor("Falcon r5.11");}}>ibmq_hanoi</a>
+            <a href="#" onMouseEnter={() => {setCurrentDevice("ibmq_auckland"); setProcessor("Falcon r5.11");}}>ibmq_auckland</a>
+            <a href="#" onMouseEnter={() => {setCurrentDevice("ibmq_cairo"); setProcessor("Falcon r5.11");}}>ibmq_cairo</a>
+            <a href="#" onMouseEnter={() => {setCurrentDevice("ibmq_mumbai"); setProcessor("Falcon r5.10");}}>ibmq_mumbai</a>
+            <a href="#" onMouseEnter={() => {setCurrentDevice("ibmq_kolkata"); setProcessor("Falcon r5.11");}}>ibmq_kolkata</a>
+            <a href="#" onMouseEnter={() => {setCurrentDevice("ibmq_algiers"); setProcessor("Falcon r5.11");}}>ibmq_algiers</a>
+          </div>
+        </div>
+        <div className="dropdown">
+          <button className="dropbtn">Type</button>
+          <div className="dropdown-content">
+            <a href="#" onMouseEnter={() => {setCurrentType("T1");}}>T1</a>
+            <a href="#" onMouseEnter={() => {setCurrentType("T2");}}>T2</a>
+          </div>
+        </div>
+        <div className="dropdown">
+          <button className="dropbtn" onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>About</button>
+        </div>
+      </div>
+      <div className="processor-name">{processor}</div>
+      <div className="circles-container">
+        {values.length === 16 && (
+          <div className="circle-grid">
+            {values.map((value, index) => (
+              <Circle 
+              color={colors[index].color}
+              lighterColor={colors[index].lighterColor}
+              onMouseEnter={() => {}}
+              onMouseLeave={() => {}}
+              onClick={handleClick}
+              frequency={value}
+              size="smallSize"
+              fontSize={currentDevice === "ibmq_guadalupe" ? '16px' : currentDevice === "ibmq_hanoi" ? '8px' : undefined}
+              text={currentDevice === "ibmq_peekskill" || currentDevice === "ibmq_hanoi" ? currentType : `${currentType} Value`}
+            />
+            ))}
+          </div>
+        )}
+        {values.length === 27 && (
+  <div className="circle-grid">
+    {values.map((value, index) => (
+      <Circle 
+        color={colors[index].color}
+        lighterColor={colors[index].lighterColor}
+        onMouseEnter={() => {}}
+        onMouseLeave={() => {}}
+        onClick={handleClick}
+        frequency={value}
+        size="extraSmallSize"
+        fontSize={
+          ["ibmq_peekskill", "ibmq_hanoi", "ibmq_auckland", "ibmq_cairo", "ibmq_mumbai", "ibmq_kolkata", "ibmq_algiers"].includes(currentDevice)
+          ? '16px' 
+          : undefined
+        }
+        text={
+          ["ibmq_peekskill", "ibmq_hanoi", "ibmq_auckland", "ibmq_cairo", "ibmq_mumbai", "ibmq_kolkata", "ibmq_algiers"].includes(currentDevice)
+          ? currentType 
+          : `${currentType} Value`
+        }
+      />
+    ))}
+  </div>
+)}
+        {values.length === 5 && (
+          <>
+            <div className="circle-row">
+              <Circle 
+                color={colors[0].color}
+                lighterColor={colors[0].lighterColor}
+                onMouseEnter={() => {}}
+                onMouseLeave={() => {}}
+                onClick={handleClick}
+                frequency={values[0]}
+                size="normalSize"
+                text={`${currentType} Value`}
+              />
+              <Circle 
+                color={colors[1].color}
+                lighterColor={colors[1].lighterColor}
+                onMouseEnter={() => {}}
+                onMouseLeave={() => {}}
+                onClick={handleClick}
+                frequency={values[1]}
+                size="normalSize"
+                text={`${currentType} Value`}
+              />
+              <Circle 
+                color={colors[2].color}
+                lighterColor={colors[2].lighterColor}
+                onMouseEnter={() => {}}
+                onMouseLeave={() => {}}
+                onClick={handleClick}
+                frequency={values[2]}
+                size="normalSize"
+                text={`${currentType} Value`}
+              />
+            </div>
+            <div className="circle-row">
+              <Circle 
+                color={colors[3].color}
+                lighterColor={colors[3].lighterColor}
+                onMouseEnter={() => {}}
+                onMouseLeave={() => {}}
+                onClick={handleClick}
+                frequency={values[3]}
+                size="normalSize"
+                text={`${currentType} Value`}
+              />
+            </div>
+            <div className="circle-row">
+              <Circle 
+                color={colors[4].color}
+                lighterColor={colors[4].lighterColor}
+                onMouseEnter={() => {}}
+                onMouseLeave={() => {}}
+                onClick={handleClick}
+                frequency={values[4]}
+                size="normalSize"
+                text={`${currentType} Value`}
+              />
+            </div>
+          </>
+        )}
+        {values.length === 7 && (
+          <>
+            <div className="circle-row">
+              <Circle 
+                color={colors[0].color}
+                lighterColor={colors[0].lighterColor}
+                onMouseEnter={() => {}}
+                onMouseLeave={() => {}}
+                onClick={handleClick}
+                frequency={values[0]}
+                size="normalSize"
+                text={`${currentType} Value`}
+              />
+              <Circle 
+                color={colors[1].color}
+                lighterColor={colors[1].lighterColor}
+                onMouseEnter={() => {}}
+                onMouseLeave={() => {}}
+                onClick={handleClick}
+                frequency={values[1]}
+                size="normalSize"
+                text={`${currentType} Value`}
+              />
+              <Circle 
+                color={colors[2].color}
+                lighterColor={colors[2].lighterColor}
+                onMouseEnter={() => {}}
+                onMouseLeave={() => {}}
+                onClick={handleClick}
+                frequency={values[2]}
+                size="normalSize"
+                text={`${currentType} Value`}
+              />
+            </div>
+            <div className="circle-row">
+              <Circle 
+                color={colors[3].color}
+                lighterColor={colors[3].lighterColor}
+                onMouseEnter={() => {}}
+                onMouseLeave={() => {}}
+                onClick={handleClick}
+                frequency={values[3]}
+                size="normalSize"
+                text={`${currentType} Value`}
+              />
+            </div>
+            <div className="circle-row">
+              <Circle 
+                color={colors[4].color}
+                lighterColor={colors[4].lighterColor}
+                onMouseEnter={() => {}}
+                onMouseLeave={() => {}}
+                onClick={handleClick}
+                frequency={values[4]}
+                size="normalSize"
+                text={`${currentType} Value`}
+              />
+              <Circle 
+                color={colors[5].color}
+                lighterColor={colors[5].lighterColor}
+                onMouseEnter={() => {}}
+                onMouseLeave={() => {}}
+                onClick={handleClick}
+                frequency={values[5]}
+                size="normalSize"
+                text={`${currentType} Value`}
+              />
+              <Circle 
+                color={colors[6].color}
+                lighterColor={colors[6].lighterColor}
+                onMouseEnter={() => {}}
+                onMouseLeave={() => {}}
+                onClick={handleClick}
+                frequency={values[6]}
+                size="normalSize"
+                text={`${currentType} Value`}
+              />
+            </div>
+          </>
+        )}
+      </div>
+      <div className="device-name">{currentDevice}</div>
+      {showTooltip && <div className="about-info">{aboutInfo}</div>}
+    </div>
+  );
+}
+
+export default App;
