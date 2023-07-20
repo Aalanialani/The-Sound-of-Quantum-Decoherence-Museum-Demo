@@ -1,0 +1,135 @@
+.App {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background-color: #262626;
+  flex-direction: column;
+  position: relative;
+}
+
+.dropdowns-container {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  color: white;
+}
+
+.dropdown {
+  position: relative;
+  display: inline-block;
+  margin-right: 10px;
+}
+
+.dropdown-content {
+  display: none;
+  position: absolute;
+  min-width: 160px;
+  z-index: 1;
+  max-height: 160px; /* approximately the height of 5 items */
+  overflow-y: auto; /* enable scrolling */
+  box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+  background-color: #717171;
+  color: white;
+}
+
+.dropdown-content a {
+  color: white;
+  padding: 12px 16px;
+  text-decoration: none;
+  display: block;
+  font-family: 'IBM Plex Mono', monospace;
+}
+
+.dropdown-content a:hover {background-color: #007fff;}
+
+.dropdown:hover .dropdown-content {display: block;}
+
+.dropdown:hover .dropbtn {background-color: #007fff;}
+
+.circle-button {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 50%;
+  border: none;
+  cursor: pointer;
+  transition: transform 0.3s;
+  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.5);
+}
+
+.circle-button.normalSize {
+  width: 100px;
+  height: 100px;
+}
+
+.circle-button.smallSize {
+  width: 50px;
+  height: 50px;
+}
+
+.circle-button.extraSmallSize {
+  width: 25px;
+  height: 25px;
+}
+
+.circle-button:hover {
+  transform: scale(1.3);
+}
+
+.circle-text {
+  color: white;
+  font-size: 18px;
+  text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;
+}
+
+.circles-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+
+.circle-row {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+}
+
+.circle-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+
+.device-name {
+  color: white;
+  margin-top: 30px;
+  font-size: 20px;
+  font-weight: bold;
+  font-family: 'IBM Plex Mono', monospace;
+}
+
+.processor-name {
+  color: white;
+  position: absolute;
+  top: calc(20% - 60px);
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 20px;
+  font-weight: bold;
+  font-family: 'IBM Plex Mono', monospace;
+}
+
+.about-info {
+  position: absolute;
+  width: 300px;
+  bottom: 10px;
+  left: 10px;
+  background-color: rgba(255, 255, 255, 0.8);
+  padding: 20px;
+  border-radius: 10px;
+  text-align: center;
+  font-size: 18px;
+  font-family: 'IBM Plex Mono', monospace;
+}
